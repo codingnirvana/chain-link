@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain Link Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f5f5f5;
+        }
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 2em;
+            color: #333;
+            font-weight: bold;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1em;
+            margin: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        #user-input {
+            padding: 12px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            width: 30%;
+            display: inline-block;
+        }
+        .chain {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 10px;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .close-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .highlight {
+            color: red;
+            font-weight: bold;
+        }
+        #result {
+            font-size: 1.2em;
+            color: #333;
+            font-weight: bold;
+        }
+        #chain-history {
+            font-size: 1em;
+            color: #666;
+        }
+        #lives-left {
+            font-weight: bold;
+            color: #d9534f;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Chain Link Game</h1>
+        <button id="new-game-btn">Start New Game</button>
+        <button id="how-to-play-btn">How to Play</button>
+        <div id="chain" class="chain">Starting Word: <span id="current-word" style="color: #FF5733; text-transform: uppercase;"></span></div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Enter your next word" />
+            <button id="submit-btn">Submit</button>
+        </div>
+        <div id="result" style="margin-top: 20px;"></div>
+        <div id="chain-history" style="margin-top: 20px;"></div>
+        <div id="lives" style="margin-top: 20px;">Lives left: <span id="lives-left">5</span></div>
+    </div>
+
+    <div id="how-to-play-modal" class="modal">
+        <h2>How to Play</h2>
+        <p>The game starts with a given word. Your goal is to guess the next word in the chain based on common phrases. For example, if the starting word is "Coffee", you might guess "Date" to form the phrase "Coffee Date".</p>
+        <p>If you guess correctly, the game will continue with a new word, and you must continue forming a chain of phrases. You have <strong>5 lives</strong>, and each incorrect guess costs you a life. Hints will be provided as you play.</p>
+        <button id="close-modal-btn" class="close-btn">Close</button>
+    </div>
+    <div id="modal-overlay" class="modal-overlay"></div>
+
+    <script src="games.js"></script>
+    <script>
+        // Pick a random game to play
+        function startNewGame() {
+            const randomGame = games[Math.floor(Math.random() * games.length)];
+            validChains = randomGame.chains;
+            currentWord = randomGame.startWord;
+            chainHistory = [];
+            lives = 5;
+            currentHintLength = 1;
+
+            document.getElementById('current-word').textContent = currentWord.toUpperCase();
+            document.getElementById('chain-history').innerHTML = '';
+            document.getElementById('lives-left').textContent = lives;
+            document.getElementById('result').textContent = '';
+            document.getElementById('user-input').value = '';
+            document.getElementById('user-input').disabled = false;
+            document.getElementById('submit-btn').disabled = false;
+            displayHint();
+        }
+
+        let validChains;
+        let currentWord;
+        let chainHistory;
+        let lives;
+        let currentHintLength;
+        startNewGame();
+
+        function displayHint() {
+            const correctAnswers = validChains[currentWord] || [];
+            if (correctAnswers.length > 0) {
+                const maxHintLength = correctAnswers[0].length;
+                const hintLength = Math.min(currentHintLength, maxHintLength);
+                document.getElementById('result').innerHTML = `<strong>Hint:</strong> The word starts with '<strong>${correctAnswers[0].slice(0, hintLength)}</strong>' and has <strong>${correctAnswers[0].length}</strong> letters.`;
+            }
+        }
+
+        function handleSubmit() {
+            const userInput = document.getElementById('user-input').value.trim().toLowerCase();
+            if (userInput === '') {
+                document.getElementById('result').innerHTML = '<strong>Please enter a word.</strong>';
+                return;
+            }
+
+            const correctAnswers = validChains[currentWord] || [];
+            const correctAnswerLowerCase = correctAnswers.map(answer => answer.toLowerCase());
+
+            if (correctAnswerLowerCase.includes(userInput)) {
+                const correctAnswerIndex = correctAnswerLowerCase.indexOf(userInput);
+                const actualAnswer = correctAnswers[correctAnswerIndex];
+                chainHistory.push(currentWord.toUpperCase() + ' -> ' + actualAnswer.toUpperCase());
+                currentWord = actualAnswer;
+                document.getElementById('current-word').textContent = currentWord.toUpperCase();
+                document.getElementById('result').innerHTML = '<strong>Good guess!</strong>';
+                document.getElementById('chain-history').innerHTML = chainHistory.join('<br>');
+                document.getElementById('user-input').placeholder = 'Enter your next word';
+                document.getElementById('user-input').value = '';
+                currentHintLength = 1;
+                displayHint();
+                if (!validChains[currentWord]) {
+                    document.getElementById('result').innerHTML = '<strong>Congratulations! You won!</strong>';
+                    document.getElementById('submit-btn').disabled = true;
+                    document.getElementById('user-input').disabled = true;
+                }
+            } else {
+                lives--;
+                document.getElementById('lives-left').textContent = lives;
+
+                if (lives > 0) {
+                    if (correctAnswers.length > 0) {
+                        currentHintLength = Math.min(currentHintLength + 1, correctAnswers[0].length);
+                        displayHint();
+                        document.getElementById('user-input').placeholder = `Word with ${correctAnswers[0].length} letters`;
+                        document.getElementById('user-input').value = '';
+                    } else {
+                        document.getElementById('result').innerHTML = '<strong>Wrong guess. Try again!</strong>';
+                    }
+                } else {
+                    // Complete the chain and highlight the missed words
+                    let tempWord = currentWord;
+                    const remainingChain = [];
+                    while (validChains[tempWord]) {
+                        const nextWord = validChains[tempWord][0];
+                        remainingChain.push(`<span class="highlight">${tempWord.toUpperCase()} -> ${nextWord.toUpperCase()}</span>`);
+                        tempWord = nextWord;
+                    }
+                    const completeChain = chainHistory.concat(remainingChain).join('<br>');
+                    document.getElementById('result').innerHTML = `<strong>Game over! You are out of lives.</strong>`;
+                    document.getElementById('chain-history').innerHTML = completeChain;
+                    document.getElementById('submit-btn').disabled = true;
+                    document.getElementById('user-input').disabled = true;
+                }
+            }
+        }
+
+        document.getElementById('submit-btn').addEventListener('click', handleSubmit);
+        document.getElementById('user-input').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                handleSubmit();
+            }
+        });
+        document.getElementById('new-game-btn').addEventListener('click', startNewGame);
+
+        // Modal functionality
+        const howToPlayBtn = document.getElementById('how-to-play-btn');
+        const modal = document.getElementById('how-to-play-modal');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        howToPlayBtn.addEventListener('click', function () {
+            modal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        });
+
+        closeModalBtn.addEventListener('click', function () {
+            modal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+        });
+
+        modalOverlay.addEventListener('click', function () {
+            modal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
+
