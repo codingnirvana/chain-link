@@ -252,35 +252,101 @@ function updateTimer() {
         `Next word in ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
-// Create example grid in modal
+// Create example grid in modal with animation
 function createExampleGrid() {
     const example = document.querySelector('.example');
+    example.innerHTML = ''; // Clear existing content
+    
     const words = [
         { text: 'CHAIN', color: '#7B68EE' },
         { text: 'REACTION', color: '#9370DB' },
         { text: 'TIME', color: '#BA55D3' }
     ];
 
-    words.forEach(word => {
+    // Create all rows first but only show first word
+    words.forEach((word, index) => {
         const row = document.createElement('div');
-        row.className = 'word-row';
+        row.className = 'word-row example-row';
+        if (index > 0) {
+            row.style.opacity = '0';
+        }
         
-        word.text.split('').forEach(letter => {
-            const tile = createLetterTile(letter, word.color);
+        word.text.split('').forEach((letter, letterIndex) => {
+            const tile = createLetterTile(
+                index === 0 || letterIndex === 0 ? letter : '',
+                word.color,
+                index === 0 || letterIndex === 0
+            );
+            if (index > 0 && letterIndex > 0) {
+                tile.style.backgroundColor = '#313131';
+            }
             row.appendChild(tile);
         });
         
         example.appendChild(row);
     });
+
+    function startAnimation() {
+        const rows = example.querySelectorAll('.example-row');
+        let currentRowIndex = 1;
+
+        function resetAnimation() {
+            // Reset all rows except first to initial state
+            rows.forEach((row, index) => {
+                if (index > 0) {
+                    row.style.opacity = '0';
+                    const tiles = row.querySelectorAll('.letter-tile');
+                    tiles.forEach((tile, tileIndex) => {
+                        if (tileIndex > 0) {
+                            tile.textContent = '';
+                            tile.style.backgroundColor = '#313131';
+                        }
+                    });
+                }
+            });
+            currentRowIndex = 1;
+            animateGuess(rows[1], words[1].text);
+        }
+
+        function animateGuess(row, word) {
+            row.style.opacity = '1';
+            const tiles = row.querySelectorAll('.letter-tile');
+            let currentLetterIndex = 1;
+
+            function typeNextLetter() {
+                if (currentLetterIndex < word.length) {
+                    const tile = tiles[currentLetterIndex];
+                    tile.textContent = word[currentLetterIndex].toUpperCase();
+                    tile.style.backgroundColor = row.firstChild.style.backgroundColor;
+                    currentLetterIndex++;
+                    setTimeout(typeNextLetter, 200);
+                } else if (currentRowIndex < words.length) {
+                    setTimeout(() => {
+                        currentRowIndex++;
+                        if (currentRowIndex < words.length) {
+                            animateGuess(rows[currentRowIndex], words[currentRowIndex].text);
+                        } else {
+                            // When animation completes, wait and restart
+                            setTimeout(resetAnimation, 2000);
+                        }
+                    }, 1000);
+                }
+            }
+
+            setTimeout(typeNextLetter, 500);
+        }
+
+        // Start the animation
+        resetAnimation();
+    }
+
+    // Start the initial animation after a short delay
+    setTimeout(startAnimation, 500);
 }
 
 // Initialize game
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup keyboard listeners
-    document.querySelectorAll('.key').forEach(key => {
-        key.addEventListener('click', () => handleKey(key.dataset.key));
-    });
-
+    // Setup keyboard input handling
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault(); // Prevent default form submission
@@ -303,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showModal() {
         modal.style.display = 'block';
         modalOverlay.style.display = 'block';
+        createExampleGrid(); // Recreate and replay animation when modal opens
     }
 
     function hideModal() {
