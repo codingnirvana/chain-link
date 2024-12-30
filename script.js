@@ -166,18 +166,149 @@ function checkGuess() {
     updateGrid();
 }
 
+function generateShareText() {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    
+    let shareText = `Chain Link ${dateStr}\n`;
+    shareText += `Score: ${totalScore}\n\n`;
+    
+    // Add grid representation
+    chainHistory.forEach((word, index) => {
+        // Show first letter and hide rest with ⬛
+        shareText += word[0]; // First letter
+        for (let i = 1; i < word.length; i++) {
+            shareText += '⬛';
+        }
+        shareText += '\n';
+    });
+    
+    return shareText;
+}
+
+function generateShareImage() {
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    const tileSize = 40;
+    const padding = 20;
+    const titleHeight = 60;
+    const scoreHeight = 40;
+    const maxWordLength = Math.max(...chainHistory.map(word => word.length));
+    
+    canvas.width = (maxWordLength * (tileSize + 5)) + (padding * 2);
+    canvas.height = (chainHistory.length * (tileSize + 5)) + titleHeight + scoreHeight + (padding * 2);
+    
+    // Set background
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw title
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 24px "Courier New"';
+    ctx.textAlign = 'center';
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    ctx.fillText(`Chain Link ${dateStr}`, canvas.width / 2, padding + 24);
+    
+    // Draw score
+    ctx.font = '20px "Courier New"';
+    ctx.fillText(`Score: ${totalScore}`, canvas.width / 2, padding + 50);
+    
+    // Draw grid
+    chainHistory.forEach((word, rowIndex) => {
+        const y = titleHeight + padding + rowIndex * (tileSize + 5);
+        
+        word.split('').forEach((letter, colIndex) => {
+            const x = padding + colIndex * (tileSize + 5) + (canvas.width - (word.length * (tileSize + 5))) / 2;
+            
+            // Draw tile background
+            ctx.fillStyle = colIndex === 0 ? colorPalette[rowIndex % colorPalette.length] : '#313131';
+            ctx.beginPath();
+            ctx.roundRect(x, y, tileSize, tileSize, 8);
+            ctx.fill();
+            
+            // Draw letter
+            if (colIndex === 0) {
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 24px "Courier New"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(letter.toUpperCase(), x + tileSize/2, y + tileSize/2);
+            }
+        });
+    });
+    
+    return canvas.toDataURL('image/png');
+}
+
 function showFinalScore() {
     const scoreDisplay = document.getElementById('score-display');
     const scoreText = document.getElementById('score-text');
     const closeBtn = document.getElementById('close-score-btn');
+    const shareBtn = document.getElementById('share-score-btn');
+    const shareResultsBtn = document.getElementById('share-results-btn');
     
     scoreText.textContent = `Final Score: ${totalScore}`;
     scoreDisplay.style.display = 'block';
     
+    // Setup share functionality
+    const shareResults = async () => {
+        const imageUrl = generateShareImage();
+        
+        try {
+            // Convert data URL to blob
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'chain-link-results.png', { type: 'image/png' });
+            
+            // Check if Web Share API Level 2 is supported (for sharing files)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Chain Link Results',
+                });
+            } else if (navigator.share) {
+                // Fallback to basic Web Share API
+                await navigator.share({
+                    title: 'Chain Link Results',
+                    text: generateShareText()
+                });
+            } else {
+                // Fallback for desktop: download the image
+                const link = document.createElement('a');
+                link.download = 'chain-link-results.png';
+                link.href = imageUrl;
+                link.click();
+                
+                const button = event.target;
+                button.textContent = 'Saved!';
+                setTimeout(() => {
+                    button.textContent = button === shareBtn ? 'Share' : 'Share Results';
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Error sharing:', err);
+            const button = event.target;
+            button.textContent = 'Error';
+            setTimeout(() => {
+                button.textContent = button === shareBtn ? 'Share' : 'Share Results';
+            }, 2000);
+        }
+    };
+    
     // Setup close button handler
     closeBtn.onclick = () => {
         scoreDisplay.style.display = 'none';
+        // Show the persistent share button when modal is closed
+        shareResultsBtn.style.display = 'block';
     };
+    
+    // Setup share buttons handlers
+    shareBtn.onclick = shareResults;
+    shareResultsBtn.onclick = shareResults;
     
     // Auto-fade after 5 seconds
     setTimeout(() => {
@@ -185,7 +316,9 @@ function showFinalScore() {
         setTimeout(() => {
             scoreDisplay.style.display = 'none';
             scoreDisplay.classList.remove('fade-out');
-        }, 500); // Wait for fade animation to complete
+            // Show the persistent share button when modal fades out
+            shareResultsBtn.style.display = 'block';
+        }, 500);
     }, 5000);
 }
 
@@ -346,7 +479,32 @@ function createExampleGrid() {
 
 // Initialize game
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup keyboard input handling
+    const mobileInput = document.getElementById('mobile-input');
+    
+    // Focus input when grid is clicked (for mobile)
+    document.getElementById('word-grid').addEventListener('click', () => {
+        mobileInput.focus();
+    });
+
+    // Handle mobile input
+    mobileInput.addEventListener('input', (e) => {
+        const value = e.target.value.toLowerCase();
+        if (value) {
+            handleKey(value[value.length - 1]);
+            mobileInput.value = ''; // Clear input after handling
+        }
+    });
+
+    mobileInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleKey('enter');
+        } else if (e.key === 'Backspace') {
+            handleKey('backspace');
+        }
+    });
+
+    // Setup keyboard input handling for desktop
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault(); // Prevent default form submission
@@ -370,22 +528,32 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'block';
         modalOverlay.style.display = 'block';
         createExampleGrid(); // Recreate and replay animation when modal opens
+        mobileInput.blur(); // Hide keyboard when showing modal
     }
 
     function hideModal() {
         modal.style.display = 'none';
         modalOverlay.style.display = 'none';
+        mobileInput.focus(); // Show keyboard when closing modal
     }
 
     helpBtn.addEventListener('click', showModal);
     closeModalBtn.addEventListener('click', hideModal);
     gotItBtn.addEventListener('click', hideModal);
     modalOverlay.addEventListener('click', hideModal);
-    newGameBtn.addEventListener('click', startNewGame);
+    newGameBtn.addEventListener('click', () => {
+        startNewGame();
+        mobileInput.focus(); // Show keyboard after new game
+    });
 
     // Start game
     startNewGame();
     createExampleGrid();
+    
+    // Focus input for mobile
+    if (/mobile|android|iphone/i.test(navigator.userAgent)) {
+        mobileInput.focus();
+    }
 
     // Start timer
     setInterval(updateTimer, 1000);

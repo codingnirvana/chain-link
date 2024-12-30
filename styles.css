@@ -146,13 +146,15 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #1a1a1a;
-    padding: 20px 40px;
+    padding: 30px;
     border-radius: 8px;
     font-size: 24px;
     color: white;
     z-index: 1001;
     opacity: 1;
     transition: opacity 0.5s ease-in-out;
+    min-width: 250px;
+    text-align: center;
 }
 .score-display.fade-out {
     opacity: 0;
@@ -342,4 +344,51 @@ h1 {
 
 .example .letter-tile {
     transition: background-color 0.3s ease-in-out;
+} 
+
+.share-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    background-color: #818384;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.share-btn:hover {
+    background-color: #999;
+} 
+
+.mobile-input {
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    font-size: 16px; /* Prevents iOS zoom */
+} 
+
+.share-results-btn {
+    display: none;
+    margin: 20px auto;
+    padding: 12px 24px;
+    background-color: #818384;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+}
+
+.share-results-btn:hover {
+    background-color: #999;
 } 
