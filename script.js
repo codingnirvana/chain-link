@@ -36,6 +36,7 @@ function createEmptyTile() {
 
 function updateGrid() {
     const grid = document.getElementById('word-grid');
+    const scrollTop = grid.scrollTop; // Store current scroll position
     grid.innerHTML = '';
     
     // Show completed words
@@ -81,6 +82,21 @@ function updateGrid() {
         });
 
         grid.appendChild(row);
+        
+        // If this is the active row, ensure it's visible
+        if (isMobile) {
+            const activeRow = grid.lastElementChild;
+            const container = document.querySelector('.game-container');
+            const rowRect = activeRow.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            if (rowRect.bottom > containerRect.bottom) {
+                container.scrollTo({
+                    top: container.scrollTop + (rowRect.bottom - containerRect.bottom) + 50,
+                    behavior: 'smooth'
+                });
+            }
+        }
     }
 
     // Show future words (only first letter)
@@ -103,6 +119,8 @@ function updateGrid() {
             grid.appendChild(row);
         }
     }
+    
+    grid.scrollTop = scrollTop; // Restore scroll position
 }
 
 function handleKey(key) {
