@@ -10,14 +10,14 @@ body {
     flex-direction: column;
 }
 .game-container {
-    max-width: 600px;
+    max-width: 550px;
     margin: 0 auto;
     padding: 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
     height: 100vh;
-    overflow-y: auto;
+    width: 100%;
     -webkit-overflow-scrolling: touch;
 }
 h1 {
@@ -44,7 +44,6 @@ h1 {
     position: relative;
     margin-bottom: 5px;
     justify-content: center;
-    width: 100%;
 }
 .letter-tile {
     width: 50px;

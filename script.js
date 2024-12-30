@@ -37,6 +37,7 @@ function createEmptyTile() {
 function updateGrid() {
     const grid = document.getElementById('word-grid');
     const scrollTop = grid.scrollTop; // Store current scroll position
+    const isMobile = /mobile|android|iphone/i.test(navigator.userAgent);
     grid.innerHTML = '';
     
     // Show completed words
