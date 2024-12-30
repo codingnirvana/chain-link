@@ -1,0 +1,284 @@
+body {
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    background-color: #1a1a1a;
+    color: white;
+}
+.game-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+h1 {
+    font-size: 2.5em;
+    color: white;
+    margin-bottom: 40px;
+}
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 30px;
+    min-height: 400px;
+    justify-content: flex-start;
+    width: 100%;
+}
+.word-row {
+    display: flex;
+    gap: 5px;
+    position: relative;
+    margin-bottom: 5px;
+    justify-content: center;
+    width: 100%;
+}
+.letter-tile {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 8px;
+    text-transform: uppercase;
+    color: white;
+    border: 2px solid transparent;
+    position: relative;
+}
+.letter-tile.active {
+    border-color: #4a9eff;
+}
+.letter-tile.active::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background-color: #4a9eff;
+    animation: blink 1s infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+.empty-tile {
+    background-color: #313131;
+    border: 2px solid #404040;
+}
+.score {
+    position: absolute;
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 20px;
+}
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 30px;
+    user-select: none;
+}
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+.key {
+    background-color: #818384;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0;
+    margin: 0;
+    height: 58px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 40px;
+}
+.key.wide {
+    flex: 1.5;
+    font-size: 12px;
+}
+.key:hover {
+    background-color: #999;
+}
+.timer {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    padding: 10px;
+    background-color: transparent;
+    color: #818384;
+    font-family: 'Courier New', monospace;
+    z-index: 1000;
+}
+.score-display {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1a1a1a;
+    padding: 20px 40px;
+    border-radius: 8px;
+    font-size: 24px;
+    color: white;
+    z-index: 1001;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+.score-display.fade-out {
+    opacity: 0;
+}
+.score-display .close-score {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 20px;
+    color: #818384;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 5px;
+}
+.score-display .close-score:hover {
+    color: white;
+}
+.help-icon {
+    position: fixed;
+    top: 20px;
+    right: 70px;
+    font-size: 24px;
+    color: #818384;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    z-index: 1000;
+}
+.help-icon:hover {
+    color: #ffffff;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1a1a1a;
+    padding: 40px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    z-index: 1001;
+    font-family: 'Courier New', monospace;
+}
+.modal h2 {
+    font-size: 32px;
+    margin-bottom: 30px;
+    font-weight: normal;
+}
+.modal p {
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+.modal .example {
+    margin: 30px 0;
+}
+.modal .rules {
+    margin-top: 40px;
+}
+.modal .rules h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.modal .rules ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.modal .rules li {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-left: 25px;
+    position: relative;
+}
+.modal .rules li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+}
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    color: #818384;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+.close-modal:hover {
+    color: #ffffff;
+}
+.got-it-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #818384;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 30px;
+}
+.got-it-btn:hover {
+    background-color: #999;
+}
+.new-game-btn {
+    position: fixed;
+    top: 20px;
+    right: 120px;
+    color: #818384;
+    cursor: pointer;
+    background: none;
+    border: 2px solid #818384;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.new-game-btn:hover {
+    color: white;
+    border-color: white;
+    background-color: #404040;
+} 
