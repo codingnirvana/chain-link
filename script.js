@@ -323,11 +323,16 @@ function showFinalScore() {
 }
 
 function startNewGame() {
-    // Reset all scores
+    // Reset all game state
     totalScore = 0;
     currentWordScore = 20;
     wrongGuesses = 0;
-    wordScores = [];  // Reset word scores array
+    wordScores = [];
+    currentGuess = '';
+    revealedLetters = 1;
+    chainHistory = [];
+    currentWord = null;
+    completeChain = [];
     
     // During development, always use the first game (COFFEE chain)
     const game = games[Math.floor(Math.random() * games.length)];
@@ -358,16 +363,14 @@ function startNewGame() {
     // First word is fully revealed, rest show only first letter
     chainHistory = [chain[0]];  // First word fully revealed
     currentWord = chain[1];     // Second word is current
-    
     currentGuess = currentWord[0];
     revealedLetters = 1;
+    
+    // Hide share results button when starting new game
+    const shareResultsBtn = document.getElementById('share-results-btn');
+    shareResultsBtn.style.display = 'none';
+    
     updateGrid();
-
-    console.log('Chain initialized:', {
-        completeChain,
-        currentWord,
-        validChains
-    });
 }
 
 // Update timer
@@ -480,70 +483,80 @@ function createExampleGrid() {
 // Initialize game
 document.addEventListener('DOMContentLoaded', () => {
     const mobileInput = document.getElementById('mobile-input');
-    
-    // Focus input when grid is clicked (for mobile)
-    document.getElementById('word-grid').addEventListener('click', () => {
-        mobileInput.focus();
-    });
-
-    // Handle mobile input
-    mobileInput.addEventListener('input', (e) => {
-        const value = e.target.value.toLowerCase();
-        if (value) {
-            handleKey(value[value.length - 1]);
-            mobileInput.value = ''; // Clear input after handling
-        }
-    });
-
-    mobileInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleKey('enter');
-        } else if (e.key === 'Backspace') {
-            handleKey('backspace');
-        }
-    });
-
-    // Setup keyboard input handling for desktop
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent default form submission
-            handleKey('enter');
-        } else if (e.key === 'Backspace') {
-            handleKey('backspace');
-        } else if (/^[a-z]$/.test(e.key.toLowerCase())) {
-            handleKey(e.key.toLowerCase());
-        }
-    });
-
-    // Setup modal functionality
     const helpBtn = document.getElementById('help-btn');
     const modal = document.getElementById('how-to-play-modal');
     const modalOverlay = document.getElementById('modal-overlay');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const gotItBtn = document.getElementById('got-it-btn');
     const newGameBtn = document.getElementById('new-game-btn');
+    const isMobile = /mobile|android|iphone/i.test(navigator.userAgent);
+    
+    // Focus input when grid is clicked (for mobile)
+    document.getElementById('word-grid').addEventListener('click', () => {
+        if (isMobile) {
+            mobileInput.focus();
+        }
+    });
+
+    // Handle mobile input
+    if (isMobile) {
+        mobileInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase();
+            if (value) {
+                handleKey(value[value.length - 1]);
+                mobileInput.value = ''; // Clear input after handling
+            }
+        });
+
+        mobileInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleKey('enter');
+            } else if (e.key === 'Backspace') {
+                handleKey('backspace');
+            }
+        });
+    } else {
+        // Setup keyboard input handling for desktop only
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleKey('enter');
+            } else if (e.key === 'Backspace') {
+                handleKey('backspace');
+            } else if (/^[a-z]$/.test(e.key.toLowerCase())) {
+                handleKey(e.key.toLowerCase());
+            }
+        });
+    }
 
     function showModal() {
         modal.style.display = 'block';
         modalOverlay.style.display = 'block';
-        createExampleGrid(); // Recreate and replay animation when modal opens
-        mobileInput.blur(); // Hide keyboard when showing modal
+        createExampleGrid();
+        if (isMobile) {
+            mobileInput.blur();
+        }
     }
 
     function hideModal() {
         modal.style.display = 'none';
         modalOverlay.style.display = 'none';
-        mobileInput.focus(); // Show keyboard when closing modal
+        if (isMobile) {
+            mobileInput.focus();
+        }
     }
 
+    // Setup modal event listeners
     helpBtn.addEventListener('click', showModal);
     closeModalBtn.addEventListener('click', hideModal);
     gotItBtn.addEventListener('click', hideModal);
     modalOverlay.addEventListener('click', hideModal);
     newGameBtn.addEventListener('click', () => {
         startNewGame();
-        mobileInput.focus(); // Show keyboard after new game
+        if (isMobile) {
+            mobileInput.focus();
+        }
     });
 
     // Start game
@@ -551,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createExampleGrid();
     
     // Focus input for mobile
-    if (/mobile|android|iphone/i.test(navigator.userAgent)) {
+    if (isMobile) {
         mobileInput.focus();
     }
 
