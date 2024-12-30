@@ -353,13 +353,12 @@ function startNewGame() {
     currentWord = null;
     completeChain = [];
     
-    // During development, always use the first game (COFFEE chain)
     const game = games[Math.floor(Math.random() * games.length)];
+    const firstFiveKeys = Object.keys(game.chains).slice(0, 5); 
     validChains = {};
-    
-    // Store chains with lowercase keys and lowercase values for comparison
-    Object.entries(game.chains).forEach(([key, values]) => {
-        validChains[key.toLowerCase()] = values.map(v => v.toLowerCase());
+
+    firstFiveKeys.forEach(key => {
+        validChains[key.toLowerCase()] = game.chains[key].map(v => v.toLowerCase());
     });
     
     // Build the entire chain (keep original case for display)
