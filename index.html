@@ -4,76 +4,233 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chain Link Game</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Courier New', monospace;
             text-align: center;
-            margin-top: 50px;
-            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: white;
         }
         .game-container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
         }
         h1 {
-            font-size: 2em;
-            color: #333;
-            font-weight: bold;
+            font-size: 2.5em;
+            color: white;
+            margin-bottom: 40px;
         }
-        button {
-            background-color: #4CAF50;
+        .grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+            margin-bottom: 30px;
+            min-height: 400px;
+            justify-content: flex-start;
+            width: 100%;
+        }
+        .word-row {
+            display: flex;
+            gap: 5px;
+            position: relative;
+            margin-bottom: 5px;
+            justify-content: center;
+            width: 100%;
+        }
+        .letter-tile {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            text-transform: uppercase;
+            color: white;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        .letter-tile.active {
+            border-color: #4a9eff;
+        }
+        .letter-tile.active::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: #4a9eff;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .empty-tile {
+            background-color: #313131;
+            border: 2px solid #404040;
+        }
+        .score {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 30px;
+            user-select: none;
+        }
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+        .key {
+            background-color: #818384;
             color: white;
             border: none;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1em;
-            margin: 10px;
+            border-radius: 4px;
+            padding: 0;
+            margin: 0;
+            height: 58px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            border-radius: 5px;
+            text-transform: uppercase;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 40px;
         }
-        button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
+        .key.wide {
+            flex: 1.5;
+            font-size: 12px;
         }
-        #user-input {
-            padding: 12px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            margin-top: 10px;
-            width: 30%;
+        .key:hover {
+            background-color: #999;
+        }
+        .timer {
+            margin-top: 40px;
+            padding: 10px 20px;
+            background-color: #2a2a2a;
+            border-radius: 20px;
             display: inline-block;
+            font-family: 'Courier New', monospace;
         }
-        .chain {
+        .links {
             margin-top: 20px;
-            font-size: 1.2em;
-            font-weight: bold;
+            color: #4a9eff;
         }
-        .input-container {
-            margin-top: 20px;
+        .links a {
+            color: #4a9eff;
+            text-decoration: none;
         }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .modal {
+            background-color: #2a2a2a;
+            color: white;
+        }
+        .close-btn {
+            background-color: #4a9eff;
+        }
+        #current-word {
+            font-size: 24px;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+        .help-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #818384;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            z-index: 1000;
+        }
+
+        .help-icon:hover {
+            color: #ffffff;
+        }
+
         .modal {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            z-index: 1000;
-            border-radius: 10px;
+            background-color: #1a1a1a;
+            padding: 40px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            z-index: 1001;
+            font-family: 'Courier New', monospace;
         }
+
+        .modal h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: normal;
+        }
+
+        .modal p {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .modal .example {
+            margin: 30px 0;
+        }
+
+        .modal .rules {
+            margin-top: 40px;
+        }
+
+        .modal .rules h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal .rules ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .modal .rules li {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .modal .rules li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -81,183 +238,391 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
         }
-        .close-btn {
-            background-color: #f44336;
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #818384;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close-modal:hover {
+            color: #ffffff;
+        }
+
+        .got-it-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #818384;
             color: white;
             border: none;
+            border-radius: 4px;
+            font-size: 18px;
             cursor: pointer;
-            border-radius: 5px;
-            font-weight: bold;
+            margin-top: 30px;
         }
-        .highlight {
-            color: red;
-            font-weight: bold;
-        }
-        #result {
-            font-size: 1.2em;
-            color: #333;
-            font-weight: bold;
-        }
-        #chain-history {
-            font-size: 1em;
-            color: #666;
-        }
-        #lives-left {
-            font-weight: bold;
-            color: #d9534f;
+
+        .got-it-btn:hover {
+            background-color: #999;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <button class="help-icon" id="help-btn">?</button>
     <div class="game-container">
-        <h1>Chain Link Game</h1>
-        <button id="new-game-btn">Start New Game</button>
-        <button id="how-to-play-btn">How to Play</button>
-        <div id="chain" class="chain">Starting Word: <span id="current-word" style="color: #FF5733; text-transform: uppercase;"></span></div>
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Enter your next word" />
-            <button id="submit-btn">Submit</button>
+        <h1>Chain Link</h1>
+        <div class="grid-container" id="word-grid">
+            <!-- Grid will be populated by JavaScript -->
         </div>
-        <div id="result" style="margin-top: 20px;"></div>
-        <div id="chain-history" style="margin-top: 20px;"></div>
-        <div id="lives" style="margin-top: 20px;">Lives left: <span id="lives-left">5</span></div>
+        <div class="keyboard">
+            <div class="keyboard-row">
+                <button class="key" data-key="q">q</button>
+                <button class="key" data-key="w">w</button>
+                <button class="key" data-key="e">e</button>
+                <button class="key" data-key="r">r</button>
+                <button class="key" data-key="t">t</button>
+                <button class="key" data-key="y">y</button>
+                <button class="key" data-key="u">u</button>
+                <button class="key" data-key="i">i</button>
+                <button class="key" data-key="o">o</button>
+                <button class="key" data-key="p">p</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key" data-key="a">a</button>
+                <button class="key" data-key="s">s</button>
+                <button class="key" data-key="d">d</button>
+                <button class="key" data-key="f">f</button>
+                <button class="key" data-key="g">g</button>
+                <button class="key" data-key="h">h</button>
+                <button class="key" data-key="j">j</button>
+                <button class="key" data-key="k">k</button>
+                <button class="key" data-key="l">l</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key wide" data-key="enter">enter</button>
+                <button class="key" data-key="z">z</button>
+                <button class="key" data-key="x">x</button>
+                <button class="key" data-key="c">c</button>
+                <button class="key" data-key="v">v</button>
+                <button class="key" data-key="b">b</button>
+                <button class="key" data-key="n">n</button>
+                <button class="key" data-key="m">m</button>
+                <button class="key wide" data-key="backspace">←</button>
+            </div>
+        </div>
+        <div class="timer" id="timer">Next word in 12:36:47</div>
     </div>
 
     <div id="how-to-play-modal" class="modal">
-        <h2>How to Play</h2>
-        <p>The game starts with a given word. Your goal is to guess the next word in the chain based on common phrases. For example, if the starting word is "Coffee", you might guess "Date" to form the phrase "Coffee Date".</p>
-        <p>If you guess correctly, the game will continue with a new word, and you must continue forming a chain of phrases. You have <strong>5 lives</strong>, and each incorrect guess costs you a life. Hints will be provided as you play.</p>
-        <button id="close-modal-btn" class="close-btn">Close</button>
+        <button class="close-modal" id="close-modal-btn">×</button>
+        <h2>How to play</h2>
+        <p>Every word on the board forms a common English phrase with the word below it. Try to guess all six missing words in the least amount of tries.</p>
+        
+        <div class="example">
+            <p>For example:</p>
+            <!-- Example will be populated by JavaScript -->
+        </div>
+
+        <div class="rules">
+            <h3>Game rules:</h3>
+            <ul>
+                <li>All words are singular</li>
+                <li>You may switch to the opposite row at any time with the arrow keys</li>
+            </ul>
+        </div>
+
+        <button class="got-it-btn" id="got-it-btn">Got It</button>
     </div>
     <div id="modal-overlay" class="modal-overlay"></div>
 
     <script src="games.js"></script>
     <script>
-        // Pick a random game to play
-        function startNewGame() {
-            const randomGame = games[Math.floor(Math.random() * games.length)];
-            validChains = randomGame.chains;
-            currentWord = randomGame.startWord;
-            chainHistory = [];
-            lives = 5;
-            currentHintLength = 1;
-
-            document.getElementById('current-word').textContent = currentWord.toUpperCase();
-            document.getElementById('chain-history').innerHTML = '';
-            document.getElementById('lives-left').textContent = lives;
-            document.getElementById('result').textContent = '';
-            document.getElementById('user-input').value = '';
-            document.getElementById('user-input').disabled = false;
-            document.getElementById('submit-btn').disabled = false;
-            displayHint();
-        }
-
         let validChains;
         let currentWord;
         let chainHistory;
         let lives;
-        let currentHintLength;
-        startNewGame();
+        let currentGuess = '';
+        let revealedLetters = 1;
+        let completeChain = [];
 
-        function displayHint() {
-            const correctAnswers = validChains[currentWord] || [];
-            if (correctAnswers.length > 0) {
-                const maxHintLength = correctAnswers[0].length;
-                const hintLength = Math.min(currentHintLength, maxHintLength);
-                document.getElementById('result').innerHTML = `<strong>Hint:</strong> The word starts with '<strong>${correctAnswers[0].slice(0, hintLength)}</strong>' and has <strong>${correctAnswers[0].length}</strong> letters.`;
+        // Color palette for the tiles (from purple to orange)
+        const colorPalette = [
+            '#7B68EE', // Purple
+            '#9370DB',
+            '#BA55D3',
+            '#FF69B4',
+            '#FF6347',
+            '#FFA07A',
+            '#FFA500'  // Orange
+        ];
+
+        function createLetterTile(letter, color, revealed = true, isActive = false) {
+            const tile = document.createElement('div');
+            tile.className = 'letter-tile' + (isActive ? ' active' : '');
+            tile.style.backgroundColor = revealed ? color : '#313131';
+            tile.textContent = revealed ? letter.toUpperCase() : '';
+            return tile;
+        }
+
+        function createEmptyTile() {
+            const tile = document.createElement('div');
+            tile.className = 'letter-tile empty-tile';
+            return tile;
+        }
+
+        function updateGrid() {
+            const grid = document.getElementById('word-grid');
+            grid.innerHTML = '';
+            
+            // Show completed words
+            chainHistory.forEach((word, index) => {
+                const row = document.createElement('div');
+                row.className = 'word-row';
+                
+                word.split('').forEach((letter) => {
+                    const tile = createLetterTile(letter, colorPalette[index % colorPalette.length]);
+                    row.appendChild(tile);
+                });
+
+                const score = document.createElement('div');
+                score.className = 'score';
+                score.textContent = '+' + (word.length >= 6 ? '20' : '10');
+                row.appendChild(score);
+
+                grid.appendChild(row);
+            });
+
+            // Show current word with guess if exists
+            if (currentWord) {
+                const row = document.createElement('div');
+                row.className = 'word-row';
+                
+                currentWord.split('').forEach((letter, index) => {
+                    const guessLetter = currentGuess[index] || '';
+                    const revealed = index === 0 || index < revealedLetters;
+                    // Show active cursor on the next position after revealed letters
+                    const isActive = !revealed && (
+                        (currentGuess.length === 0 && index === 1) || // First unrevealed position when no guess
+                        index === currentGuess.length // Next position while typing
+                    );
+                    const tile = createLetterTile(
+                        revealed ? letter : guessLetter,
+                        revealed ? colorPalette[chainHistory.length % colorPalette.length] : '#404040',
+                        true,
+                        isActive
+                    );
+                    row.appendChild(tile);
+                });
+                grid.appendChild(row);
+            }
+
+            // Show future words (only first letter)
+            const currentIndex = completeChain.indexOf(currentWord);
+            if (currentIndex !== -1) {
+                for (let i = currentIndex + 1; i < completeChain.length; i++) {
+                    const word = completeChain[i];
+                    const row = document.createElement('div');
+                    row.className = 'word-row';
+                    
+                    word.split('').forEach((letter, index) => {
+                        const revealed = index === 0;
+                        const tile = createLetterTile(
+                            letter,
+                            colorPalette[i % colorPalette.length],
+                            revealed
+                        );
+                        row.appendChild(tile);
+                    });
+                    grid.appendChild(row);
+                }
             }
         }
 
-        function handleSubmit() {
-            const userInput = document.getElementById('user-input').value.trim().toLowerCase();
-            if (userInput === '') {
-                document.getElementById('result').innerHTML = '<strong>Please enter a word.</strong>';
-                return;
+        function handleKey(key) {
+            if (!currentWord) return;
+            
+            if (key === 'enter') {
+                // Check if we have enough letters for the remaining part of the word
+                console.log('Current guess:', currentGuess);
+                if (currentGuess.length === currentWord.length) {
+                    checkGuess();
+                }
+            } else if (key === 'backspace' && currentGuess.length > 1) {
+                currentGuess = currentGuess.slice(0, -1);
+                updateGrid();
+            } else if (/^[a-z]$/.test(key)) {
+                currentGuess += key;
+                updateGrid();
             }
+        }
 
-            const correctAnswers = validChains[currentWord] || [];
-            const correctAnswerLowerCase = correctAnswers.map(answer => answer.toLowerCase());
-
-            if (correctAnswerLowerCase.includes(userInput)) {
-                const correctAnswerIndex = correctAnswerLowerCase.indexOf(userInput);
-                const actualAnswer = correctAnswers[correctAnswerIndex];
-                chainHistory.push(currentWord.toUpperCase() + ' -> ' + actualAnswer.toUpperCase());
-                currentWord = actualAnswer;
-                document.getElementById('current-word').textContent = currentWord.toUpperCase();
-                document.getElementById('result').innerHTML = '<strong>Good guess!</strong>';
-                document.getElementById('chain-history').innerHTML = chainHistory.join('<br>');
-                document.getElementById('user-input').placeholder = 'Enter your next word';
-                document.getElementById('user-input').value = '';
-                currentHintLength = 1;
-                displayHint();
-                if (!validChains[currentWord]) {
-                    document.getElementById('result').innerHTML = '<strong>Congratulations! You won!</strong>';
-                    document.getElementById('submit-btn').disabled = true;
-                    document.getElementById('user-input').disabled = true;
+        function checkGuess() {
+            if (!currentWord) return;
+            
+            // Convert both to lowercase for comparison
+            const guessLower = currentGuess.toLowerCase();
+            const currentWordLower = currentWord.toLowerCase();
+            
+            console.log('Comparing:', { guessLower, currentWordLower });
+            
+            if (guessLower === currentWordLower) {
+                // Correct guess - add to history and move to next word
+                chainHistory.push(currentWord);
+                
+                // Find the next word in the complete chain
+                const currentIndex = completeChain.indexOf(currentWord);
+                const nextWord = completeChain[currentIndex + 1];
+                
+                // Move to next word if exists
+                if (nextWord) {
+                    currentWord = nextWord;
+                    currentGuess = nextWord[0];
+                    revealedLetters = 1;
+                } else {
+                    // Game won
+                    currentWord = null;
+                    document.querySelectorAll('.key').forEach(key => key.disabled = true);
                 }
             } else {
-                lives--;
-                document.getElementById('lives-left').textContent = lives;
-
-                if (lives > 0) {
-                    if (correctAnswers.length > 0) {
-                        currentHintLength = Math.min(currentHintLength + 1, correctAnswers[0].length);
-                        displayHint();
-                        document.getElementById('user-input').placeholder = `Word with ${correctAnswers[0].length} letters`;
-                        document.getElementById('user-input').value = '';
-                    } else {
-                        document.getElementById('result').innerHTML = '<strong>Wrong guess. Try again!</strong>';
-                    }
-                } else {
-                    // Complete the chain and highlight the missed words
-                    let tempWord = currentWord;
-                    const remainingChain = [];
-                    while (validChains[tempWord]) {
-                        const nextWord = validChains[tempWord][0];
-                        remainingChain.push(`<span class="highlight">${tempWord.toUpperCase()} -> ${nextWord.toUpperCase()}</span>`);
-                        tempWord = nextWord;
-                    }
-                    const completeChain = chainHistory.concat(remainingChain).join('<br>');
-                    document.getElementById('result').innerHTML = `<strong>Game over! You are out of lives.</strong>`;
-                    document.getElementById('chain-history').innerHTML = completeChain;
-                    document.getElementById('submit-btn').disabled = true;
-                    document.getElementById('user-input').disabled = true;
-                }
+                // Wrong guess - reveal next letter
+                revealedLetters = Math.min(revealedLetters + 1, currentWord.length);
+                currentGuess = currentWord.slice(0, revealedLetters);
             }
+            updateGrid();
         }
 
-        document.getElementById('submit-btn').addEventListener('click', handleSubmit);
-        document.getElementById('user-input').addEventListener('keypress', function (event) {
-            if (event.key === 'Enter') {
-                handleSubmit();
+        function startNewGame() {
+            // During development, always use the first game (COFFEE chain)
+            const game = games[0];
+            validChains = {};
+            
+            // Store chains with lowercase keys and lowercase values for comparison
+            Object.entries(game.chains).forEach(([key, values]) => {
+                validChains[key.toLowerCase()] = values.map(v => v.toLowerCase());
+            });
+            
+            // Build the entire chain (keep original case for display)
+            let chain = [game.startWord];
+            let word = game.startWord;  
+            let lowerWord = word.toLowerCase();
+            
+            while (validChains[lowerWord] && validChains[lowerWord].length > 0) {
+                // Find the original cased version from the game data
+                const nextLowerWord = validChains[lowerWord][0];
+                const nextWord = game.chains[word].find(w => w.toLowerCase() === nextLowerWord);
+                chain.push(nextWord);
+                word = nextWord;
+                lowerWord = word.toLowerCase();
             }
-        });
-        document.getElementById('new-game-btn').addEventListener('click', startNewGame);
+            
+            // Store the complete chain for reference
+            completeChain = chain;
+            
+            // First word is fully revealed, rest show only first letter
+            chainHistory = [chain[0]];  // First word fully revealed
+            currentWord = chain[1];     // Second word is current
+            
+            currentGuess = currentWord[0];
+            revealedLetters = 1;
+            updateGrid();
 
-        // Modal functionality
-        const howToPlayBtn = document.getElementById('how-to-play-btn');
+            console.log('Chain initialized:', {
+                completeChain,
+                currentWord,
+                validChains
+            });
+
+            // Setup keyboard listeners
+            document.querySelectorAll('.key').forEach(key => {
+                key.addEventListener('click', () => handleKey(key.dataset.key));
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    handleKey('enter');
+                } else if (e.key === 'Backspace') {
+                    handleKey('backspace');
+                } else if (/^[a-z]$/.test(e.key.toLowerCase())) {
+                    handleKey(e.key.toLowerCase());
+                }
+            });
+        }
+
+        // Initialize game
+        startNewGame();
+
+        // Update timer
+        function updateTimer() {
+            const now = new Date();
+            const midnight = new Date();
+            midnight.setHours(24, 0, 0, 0);
+            const diff = midnight - now;
+            
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            document.getElementById('timer').textContent = 
+                `Next word in ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // Add modal functionality
+        const helpBtn = document.getElementById('help-btn');
         const modal = document.getElementById('how-to-play-modal');
         const modalOverlay = document.getElementById('modal-overlay');
         const closeModalBtn = document.getElementById('close-modal-btn');
+        const gotItBtn = document.getElementById('got-it-btn');
 
-        howToPlayBtn.addEventListener('click', function () {
+        function showModal() {
             modal.style.display = 'block';
             modalOverlay.style.display = 'block';
-        });
+        }
 
-        closeModalBtn.addEventListener('click', function () {
+        function hideModal() {
             modal.style.display = 'none';
             modalOverlay.style.display = 'none';
-        });
+        }
 
-        modalOverlay.addEventListener('click', function () {
-            modal.style.display = 'none';
-            modalOverlay.style.display = 'none';
-        });
+        helpBtn.addEventListener('click', showModal);
+        closeModalBtn.addEventListener('click', hideModal);
+        gotItBtn.addEventListener('click', hideModal);
+        modalOverlay.addEventListener('click', hideModal);
+
+        // Create example grid in modal
+        function createExampleGrid() {
+            const example = document.querySelector('.example');
+            const words = [
+                { text: 'CHAIN', color: '#7B68EE' },
+                { text: 'REACTION', color: '#9370DB' },
+                { text: 'TIME', color: '#BA55D3' }
+            ];
+
+            words.forEach(word => {
+                const row = document.createElement('div');
+                row.className = 'word-row';
+                
+                word.text.split('').forEach(letter => {
+                    const tile = createLetterTile(letter, word.color);
+                    row.appendChild(tile);
+                });
+                
+                example.appendChild(row);
+            });
+        }
+
+        // Call after game initialization
+        createExampleGrid();
     </script>
 </body>
 </html>

@@ -1,16 +1,16 @@
         const games = [
             {
-                startWord: 'Coffee',
+                startWord: 'COFFEE',
                 chains: {
-                    'Coffee': ['Date'],
-                    'Date': ['Night'],
-                    'Night': ['Time'],
-                    'Time': ['Machine', 'Management'],
-                    'Machine': ['Gun'],
-                    'Gun': ['Powder'],
-                    'Powder': ['House'],
-                    'House': ['Party'],
-                    'Party': ['Animal']
+                    'COFFEE': ['DATE'],
+                    'DATE': ['NIGHT'],
+                    'NIGHT': ['TIME'],
+                    'TIME': ['MACHINE', 'MANAGEMENT'],
+                    'MACHINE': ['GUN'],
+                    'GUN': ['POWDER'],
+                    'POWDER': ['HOUSE'],
+                    'HOUSE': ['PARTY'],
+                    'PARTY': ['ANIMAL']
                 }
             },
             {
