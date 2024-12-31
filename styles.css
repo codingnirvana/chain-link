@@ -28,8 +28,8 @@ h1 {
 .grid-container {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    align-items: center;
+    gap: 2px;
+    align-items: flex-start;
     margin-bottom: 30px;
     min-height: 400px;
     justify-content: flex-start;
@@ -37,17 +37,24 @@ h1 {
     flex: 1;
     padding-bottom: 60px;
     position: relative;
+    max-width: 600px;
+    margin: 0 auto;
 }
 .word-row {
     display: flex;
-    gap: 5px;
+    gap: 2px;
     position: relative;
-    margin-bottom: 5px;
-    justify-content: center;
+    margin-bottom: 2px;
+    justify-content: flex-start;
+    width: 100%;
+}
+.word-row::after {
+    content: '';
+    flex: 1;
 }
 .letter-tile {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -58,6 +65,7 @@ h1 {
     color: white;
     border: 2px solid transparent;
     position: relative;
+    transition: background-color 0.3s;
 }
 .letter-tile.active {
     border-color: #4a9eff;
@@ -336,8 +344,8 @@ h1 {
     }
 
     .letter-tile {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
         font-size: 20px;
     }
 
@@ -347,7 +355,8 @@ h1 {
     }
 
     .grid-container {
-        padding-bottom: 100px;
+        max-width: 100%;
+        padding-bottom: 40px;
     }
 } 
 .example-row {
